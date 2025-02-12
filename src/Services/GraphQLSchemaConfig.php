@@ -3,6 +3,7 @@
 namespace Yakovenko\LighthouseGraphqlMultiSchema\Services;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 class GraphQLSchemaConfig
 {
@@ -73,7 +74,15 @@ class GraphQLSchemaConfig
         $requestPath = $this->request->getPathInfo();
 
         foreach ( $this->multiSchemas as $schemaKey => $schemaConfig ) {
-            if ( $schemaConfig['route_uri'] === $requestPath ) {
+            $route = Route::getRoutes()->match($this->request);
+
+            $schemaMatches = $schemaConfig['route_uri'] === $requestPath;
+
+            if (config('lighthouse-multi-schema.enable_wildcard_route_names')) {
+                $schemaMatches = $schemaConfig['route_name'] === $route->getName();
+            }
+
+            if ( $schemaMatches ) {
                 $this->key          = $schemaKey;
                 $this->path         = $schemaConfig['schema_path'] ?? null;
                 $this->cachePath    = $schemaConfig['schema_cache_path'] ?? null;
