@@ -74,15 +74,9 @@ class GraphQLSchemaConfig
         $requestPath = $this->request->getPathInfo();
 
         foreach ( $this->multiSchemas as $schemaKey => $schemaConfig ) {
-            $schemaMatches = $schemaConfig['route_uri'] === $requestPath;
+            $route = Route::getRoutes()->match($this->request);
 
-            if (config('lighthouse-multi-schema.enable_wildcard_route_names')) {
-                $route = Route::getRoutes()->match($this->request);
-
-                $schemaMatches = $schemaConfig['route_name'] === $route->getName();
-            }
-
-            if ( $schemaMatches ) {
+            if ( $schemaConfig['route_name'] === $route->getName() ) {
                 $this->key          = $schemaKey;
                 $this->path         = $schemaConfig['schema_path'] ?? null;
                 $this->cachePath    = $schemaConfig['schema_cache_path'] ?? null;
